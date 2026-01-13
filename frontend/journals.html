@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Journal Publications - Faculty Publication System</title>
+  <style>
+    :root {
+      --primary-color: #4a90e2;
+      --success-color: #34c759;
+      --text-color: #2c3e50;
+      --bg-light: #f8f9fa;
+      --shadow: 0 2px 4px rgba(0,0,0,0.1);
+      --radius: 8px;
+    }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(120deg, #e6f2ff 0%, #f0f7ff 100%);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 0 20px;
+      position: relative;
+    }
+
+    .header {
+      background: rgba(255, 255, 255, 0.97);
+      padding: 30px;
+      border-radius: var(--radius);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+      text-align: center;
+      margin-bottom: 30px;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.7);
+    }
+
+    .header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      background: linear-gradient(to right, #7eb6ff 0%, #5ca3ff 100%);
+    }
+
+    .back-button {
+      color: #4d8bff;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      display: block;
+      margin: 40px auto;
+      text-align: center;
+      font-size: 1.2em;
+      padding: 15px;
+      width: fit-content;
+      position: relative;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .back-button::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(to right, #7eb6ff 0%, #5ca3ff 100%);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s ease;
+    }
+
+    .back-button:hover {
+      color: #3474e6;
+      transform: translateX(-5px);
+    }
+
+    .back-button:hover::before {
+      transform: scaleX(1);
+    }
+
+    .publications-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 25px;
+      margin-top: 20px;
+    }
+
+    .publication-card {
+      background: rgba(255, 255, 255, 0.97);
+      border-radius: var(--radius);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+      padding: 25px;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .publication-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+      background: rgba(255, 255, 255, 0.99);
+      border-color: rgba(255, 255, 255, 0.9);
+    }
+
+    .publication-title {
+      color: var(--primary-color);
+      font-size: 1.2em;
+      margin: 0 0 15px 0;
+      font-weight: 600;
+    }
+
+    .publication-info {
+      color: var(--text-color);
+      margin: 8px 0;
+      line-height: 1.5;
+    }
+
+    .publication-info strong {
+      font-weight: 600;
+      color: #4a5568;
+    }
+
+    .publication-link {
+      display: inline-block;
+      color: var(--primary-color);
+      text-decoration: none;
+      font-weight: 500;
+      margin-top: 10px;
+      transition: color 0.2s;
+    }
+
+    .publication-link:hover {
+      color: #357abd;
+      text-decoration: underline;
+    }
+
+    .no-data {
+      text-align: center;
+      padding: 40px;
+      background: white;
+      border-radius: var(--radius);
+      color: #666;
+      font-style: italic;
+      margin: 20px 0;
+      box-shadow: var(--shadow);
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        margin: 20px auto;
+      }
+
+      .publications-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .back-button {
+        font-size: 1.1em;
+        padding: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Journal Publications</h1>
+    </div>
+
+    <div id="journalsList" class="publications-grid">
+      <!-- Publications will be loaded here -->
+    </div>
+
+    <a href="index.html" class="back-button">← Back to Home</a>
+  </div>
+
+  <script>
+    async function loadJournals() {
+      try {
+        const response = await fetch('http://localhost:3000/faculty/all-journals');
+        if (!response.ok) throw new Error('Failed to fetch journals');
+        
+        const journals = await response.json();
+        const journalsList = document.getElementById('journalsList');
+        
+        if (journals.length === 0) {
+          journalsList.innerHTML = '<div class="no-data">No journal publications found</div>';
+          return;
+        }
+
+        journalsList.innerHTML = journals.map(journal => `
+          <div class="publication-card">
+            <h2 class="publication-title">${journal.title}</h2>
+            <p class="publication-info"><strong>Faculty:</strong> ${journal.faculty_name}</p>
+            <p class="publication-info"><strong>Year:</strong> ${journal.pub_year}</p>
+            ${journal.vol ? `<p class="publication-info"><strong>Volume:</strong> ${journal.vol}</p>` : ''}
+            ${journal.issue ? `<p class="publication-info"><strong>Issue:</strong> ${journal.issue}</p>` : ''}
+            ${journal.page_no ? `<p class="publication-info"><strong>Pages:</strong> ${journal.page_no}</p>` : ''}
+            ${journal.doi ? `<p class="publication-info"><strong>DOI:</strong> ${journal.doi}</p>` : ''}
+            ${journal.link ? `<a href="${journal.link}" target="_blank" class="publication-link">View Publication →</a>` : ''}
+          </div>
+        `).join('');
+
+      } catch (error) {
+        console.error('Error:', error);
+        document.getElementById('journalsList').innerHTML = 
+          '<div class="no-data">Error loading journals. Please try again later.</div>';
+      }
+    }
+
+    loadJournals();
+  </script>
+</body>
+</html>

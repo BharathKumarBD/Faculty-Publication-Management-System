@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Faculty Publication Management System</title>
+  <style>
+    :root {
+      --primary-color: #4a90e2;
+      --success-color: #34c759;
+      --text-color: #2c3e50;
+      --bg-light: #f8f9fa;
+      --shadow: 0 2px 4px rgba(0,0,0,0.1);
+      --radius: 8px;
+    }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+
+    .container {
+      background-color: rgba(255, 255, 255, 0.98);
+      padding: 30px;
+      border-radius: var(--radius);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 1000px;
+      margin: 30px auto;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      margin-bottom: 25px;
+      color: var(--text-color);
+      text-align: center;
+      font-size: 2.2em;
+      font-weight: 600;
+    }
+
+    .search-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      margin: 20px auto;
+      flex-wrap: wrap;
+      width: 100%;
+      max-width: 800px;
+    }
+
+    .search-section, .year-section {
+      flex: 1;
+      min-width: 280px;
+      padding: 15px;
+      background-color: var(--bg-light);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .search-section:hover, .year-section:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .faculty-select, .year-select {
+      padding: 8px 12px;
+      border: 2px solid #e1e4e8;
+      border-radius: var(--radius);
+      font-size: 14px;
+      background-color: white;
+      color: var(--text-color);
+      transition: border-color 0.2s;
+      outline: none;
+    }
+
+    .faculty-select {
+      width: 180px;
+    }
+
+    .year-select {
+      width: 120px;
+    }
+
+    .faculty-select:focus, .year-select:focus {
+      border-color: var(--primary-color);
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 0.95em;
+      white-space: nowrap;
+      color: var(--text-color);
+      font-weight: 600;
+    }
+
+    .button {
+      margin: 8px;
+      padding: 12px 24px;
+      font-size: 15px;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: inline-block;
+      font-weight: 500;
+    }
+
+    .button:hover {
+      background-color: #357abd;
+      transform: translateY(-1px);
+    }
+
+    .search-button {
+      background-color: var(--success-color);
+      color: white;
+      padding: 8px 16px;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: 14px;
+      white-space: nowrap;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+
+    .search-button:hover {
+      background-color: #2da84e;
+      transform: translateY(-1px);
+    }
+
+    .results-section {
+      width: 100%;
+      margin-top: 30px;
+      padding: 0 15px;
+    }
+
+    .publication {
+      background: white;
+      padding: 20px;
+      margin: 15px 0;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid #e1e4e8;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .publication:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .publication h3 {
+      margin: 0 0 12px 0;
+      color: var(--primary-color);
+      font-size: 1.2em;
+    }
+
+    .publication p {
+      margin: 8px 0;
+      color: var(--text-color);
+      line-height: 1.5;
+    }
+
+    .publication a {
+      color: var(--primary-color);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .publication a:hover {
+      color: #357abd;
+      text-decoration: underline;
+    }
+
+    .no-data {
+      text-align: center;
+      padding: 30px;
+      color: #666;
+      font-style: italic;
+      background: var(--bg-light);
+      border-radius: var(--radius);
+      margin: 20px 0;
+    }
+
+    .nav-buttons {
+      margin: 25px 0;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        margin: 15px;
+        padding: 20px;
+      }
+      
+      .search-section, .year-section {
+        min-width: 100%;
+      }
+
+      .nav-buttons {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .button {
+        margin: 5px 0;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Faculty Publication Management System</h1>
+    
+    <div class="search-container">
+      <div class="search-section">
+        <h2>Faculty:</h2>
+        <select id="facultySelect" class="faculty-select">
+          <option value="">Select Faculty</option>
+        </select>
+        <button onclick="searchPublications()" class="search-button">Search</button>
+      </div>
+
+      <div class="year-section">
+        <h2>Year:</h2>
+        <select id="yearSelect" class="year-select">
+          <option value="">Select Year</option>
+        </select>
+        <button onclick="searchPublicationsByYear()" class="search-button">Search</button>
+      </div>
+    </div>
+
+    <div class="results-section" id="resultsSection">
+      <div id="publicationsList"></div>
+    </div>
+
+    <div class="nav-buttons">
+      <a href="conferences.html" class="button">View All Conferences</a>
+      <a href="journals.html" class="button">View All Journals</a>
+      <a href="books.html" class="button">View All Books</a>
+      <a href="login.html" class="button">Faculty Login</a>
+    </div>
+  </div>
+
+  <script>
+    async function loadFacultyNames() {
+      try {
+        const res = await fetch('http://localhost:3000/faculty/all-faculty');
+        if (!res.ok) throw new Error('Failed to fetch faculty list');
+        
+        const faculty = await res.json();
+        const select = document.getElementById('facultySelect');
+        
+        faculty.forEach(f => {
+          const option = document.createElement('option');
+          option.value = f.id;
+          option.textContent = f.name;
+          select.appendChild(option);
+        });
+      } catch (error) {
+        console.error('Error loading faculty names:', error);
+        document.getElementById('facultySelect').innerHTML = '<option value="">Error loading faculty list</option>';
+      }
+    }
+
+    function populateYearDropdown() {
+      const yearSelect = document.getElementById('yearSelect');
+      const currentYear = new Date().getFullYear();
+      yearSelect.innerHTML = '<option value="">Select Year</option>';
+      
+      for (let year = currentYear + 1; year >= 2000; year--) {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = year;
+        yearSelect.appendChild(option);
+      }
+    }
+
+    async function searchPublications() {
+      const facultyId = document.getElementById('facultySelect').value;
+      const resultsList = document.getElementById('publicationsList');
+      
+      if (!facultyId) {
+        resultsList.innerHTML = '<div class="no-data">Please select a faculty member</div>';
+        return;
+      }
+
+      try {
+        const res = await fetch(`http://localhost:3000/faculty/publications/${facultyId}`);
+        if (!res.ok) {
+          throw new Error(`Failed to fetch publications: ${res.status} ${res.statusText}`);
+        }
+        
+        const publications = await res.json();
+        
+        if (publications.length === 0) {
+          resultsList.innerHTML = '<div class="no-data">No publications found for this faculty</div>';
+          return;
+        }
+
+        resultsList.innerHTML = publications.map(pub => `
+          <div class="publication">
+            <h3>${pub.title}</h3>
+            <p><strong>Type:</strong> ${pub.type}</p>
+            <p><strong>Year:</strong> ${pub.pub_year}</p>
+            ${pub.location ? `<p><strong>Location:</strong> ${pub.location}</p>` : ''}
+            <p><strong>Link:</strong> ${pub.link ? `<a href="${pub.link}" target="_blank">View Publication</a>` : 'N/A'}</p>
+          </div>
+        `).join('');
+
+      } catch (error) {
+        console.error('Error:', error);
+        resultsList.innerHTML = `<div class="no-data">Error loading publications: ${error.message}</div>`;
+      }
+    }
+
+    async function searchPublicationsByYear() {
+      const year = document.getElementById('yearSelect').value;
+      const resultsList = document.getElementById('publicationsList');
+      
+      if (!year) {
+        resultsList.innerHTML = '<div class="no-data">Please select a year</div>';
+        return;
+      }
+
+      try {
+        const res = await fetch(`http://localhost:3000/faculty/publications-by-year/${year}`);
+        if (!res.ok) {
+          throw new Error(`Failed to fetch publications: ${res.status} ${res.statusText}`);
+        }
+        
+        const publications = await res.json();
+        
+        if (publications.length === 0) {
+          resultsList.innerHTML = `<div class="no-data">No publications found for year ${year}</div>`;
+          return;
+        }
+
+        resultsList.innerHTML = publications.map(pub => `
+          <div class="publication">
+            <h3>${pub.title}</h3>
+            <p><strong>Type:</strong> ${pub.type}</p>
+            <p><strong>Faculty:</strong> ${pub.faculty_name}</p>
+            ${pub.location ? `<p><strong>Location:</strong> ${pub.location}</p>` : ''}
+            <p><strong>Link:</strong> ${pub.link ? `<a href="${pub.link}" target="_blank">View Publication</a>` : 'N/A'}</p>
+          </div>
+        `).join('');
+
+      } catch (error) {
+        console.error('Error:', error);
+        resultsList.innerHTML = `<div class="no-data">Error loading publications: ${error.message}</div>`;
+      }
+    }
+
+    loadFacultyNames();
+    populateYearDropdown();
+  </script>
+</body>
+</html>

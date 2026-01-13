@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Faculty Dashboard</title>
+  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <a href="index.html" class="navbar-brand">Faculty Publications</a>
+    <div class="navbar-right">
+      <span id="facultyName"></span>
+      <button onclick="logout()" class="logout-btn">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <section id="publications">
+      <h2>My Publications</h2>
+      <div id="conferenceList"></div>
+      <div id="journalList"></div>
+      <div id="bookList"></div>
+    </section>
+
+    <section id="addPublication">
+      <h2>Add Publication</h2>
+      <div class="add-publication-options">
+        <button class="add-option-btn" onclick="openModal('conferenceModal')">
+          <i class="fas fa-book"></i> Add Conference
+        </button>
+        <button class="add-option-btn" onclick="openModal('journalModal')">
+          <i class="fas fa-journal-whills"></i> Add Journal
+        </button>
+        <button class="add-option-btn" onclick="openModal('bookModal')">
+          <i class="fas fa-book-open"></i> Add Book
+        </button>
+      </div>
+    </section>
+
+    <!-- Conference Modal -->
+    <div id="conferenceModal" class="modal-overlay">
+      <div class="form-modal">
+        <div class="modal-header">
+          <h3><i class="fas fa-book"></i> Add Conference Publication</h3>
+          <button class="close-modal" onclick="closeModal('conferenceModal')">×</button>
+        </div>
+        <div class="modal-body">
+          <form id="conferenceForm">
+            <input name="title" placeholder="Title*" required>
+            <input name="pub_year" placeholder="Year*" type="number" min="1900" max="2099" required>
+            <input name="location" placeholder="Location">
+            <input name="link" placeholder="Link*" type="url" required>
+            <input name="vol" placeholder="Volume">
+            <input name="issue" placeholder="Issue">
+            <input name="page_no" placeholder="Page No">
+            <input name="bibtex" placeholder="BibTex">
+            <input name="doi" placeholder="DOI*" required>
+            <button type="submit">Add Conference Publication</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Journal Modal -->
+    <div id="journalModal" class="modal-overlay">
+      <div class="form-modal">
+        <div class="modal-header">
+          <h3><i class="fas fa-journal-whills"></i> Add Journal Publication</h3>
+          <button class="close-modal" onclick="closeModal('journalModal')">×</button>
+        </div>
+        <div class="modal-body">
+          <form id="journalForm">
+            <input name="title" placeholder="Title*" required>
+            <input name="pub_year" placeholder="Year*" type="number" min="1900" max="2099" required>
+            <input name="link" placeholder="Link*" type="url" required>
+            <input name="vol" placeholder="Volume">
+            <input name="issue" placeholder="Issue">
+            <input name="page_no" placeholder="Page No">
+            <input name="bibtex" placeholder="BibTex">
+            <input name="doi" placeholder="DOI*" required>
+            <button type="submit">Add Journal Publication</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Book Modal -->
+    <div id="bookModal" class="modal-overlay">
+      <div class="form-modal">
+        <div class="modal-header">
+          <h3><i class="fas fa-book-open"></i> Add Book Publication</h3>
+          <button class="close-modal" onclick="closeModal('bookModal')">×</button>
+        </div>
+        <div class="modal-body">
+          <form id="bookForm">
+            <input name="title" placeholder="Title*" required>
+            <input name="chapter" placeholder="Chapter">
+            <input name="pub_year" placeholder="Year*" type="number" min="1900" max="2099" required>
+            <input name="link" placeholder="Link*" type="url" required>
+            <input name="isbn" placeholder="ISBN">
+            <input name="vol" placeholder="Volume">
+            <input name="issue" placeholder="Issue">
+            <input name="page_no" placeholder="Page No">
+            <input name="bibtex" placeholder="BibTex">
+            <input name="doi" placeholder="DOI*" required>
+            <button type="submit">Add Book Publication</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div id="message"></div>
+  </div>
+
+  <script>
+    // Modal functions
+    function openModal(modalId) {
+      document.getElementById(modalId).classList.add('show');
+      document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('show');
+      document.body.style.overflow = ''; // Restore scrolling
+    }
+
+    // Close modal when clicking outside
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          closeModal(modal.id);
+        }
+      });
+    });
+
+    // Close modal on escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.show').forEach(modal => {
+          closeModal(modal.id);
+        });
+      }
+    });
+
+    // Fetch and display publications on load
+    async function loadPublications() {
+      const res = await fetch('http://localhost:3000/faculty/publications', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      const data = await res.json();
+
+      const confDiv = document.getElementById('conferenceList');
+      const journalDiv = document.getElementById('journalList');
+      const bookDiv = document.getElementById('bookList');
+
+      confDiv.innerHTML = '<h3><i class="fas fa-book"></i> Conferences</h3>' + 
+        (data.conferences.length > 0 
+          ? data.conferences.map(c =>
+              `<div class="publication-card">
+                <h4>${c.title}</h4>
+                <p>Year: ${c.pub_year}</p>
+                <a href="${c.link}" target="_blank">View Publication <i class="fas fa-external-link-alt"></i></a>
+              </div>`
+            ).join('')
+          : '<p class="no-data">No conference publications found</p>'
+        );
+
+      journalDiv.innerHTML = '<h3><i class="fas fa-journal-whills"></i> Journals</h3>' + 
+        (data.journals.length > 0
+          ? data.journals.map(j =>
+              `<div class="publication-card">
+                <h4>${j.title}</h4>
+                <p>Year: ${j.pub_year}</p>
+                <a href="${j.link}" target="_blank">View Publication <i class="fas fa-external-link-alt"></i></a>
+              </div>`
+            ).join('')
+          : '<p class="no-data">No journal publications found</p>'
+        );
+
+      bookDiv.innerHTML = '<h3><i class="fas fa-book-open"></i> Books</h3>' + 
+        (data.books.length > 0
+          ? data.books.map(b =>
+              `<div class="publication-card">
+                <h4>${b.title}</h4>
+                <p>Year: ${b.pub_year}</p>
+                <a href="${b.link}" target="_blank">View Publication <i class="fas fa-external-link-alt"></i></a>
+              </div>`
+            ).join('')
+          : '<p class="no-data">No book publications found</p>'
+        );
+    }
+
+    // Handle publication submission
+    async function submitForm(formId, type) {
+      const form = document.getElementById(formId);
+      const data = Object.fromEntries(new FormData(form).entries());
+
+      const res = await fetch(`http://localhost:3000/faculty/add/${type}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + localStorage.getItem('token')
+        },
+        body: JSON.stringify(data)
+      });
+
+      const result = await res.json();
+      const msgDiv = document.getElementById('message');
+      msgDiv.innerText = result.message || 'Error adding publication';
+      msgDiv.className = res.ok ? 'show success' : 'show error';
+      
+      if (res.ok) {
+        loadPublications(); // Refresh list
+        form.reset(); // Clear the form
+        closeModal(formId.replace('Form', 'Modal')); // Close the modal
+      }
+      
+      // Hide message after 3 seconds
+      setTimeout(() => {
+        msgDiv.className = '';
+      }, 3000);
+    }
+
+    // Logout function
+    function logout() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('faculty');
+      window.location.href = 'login.html';
+    }
+
+    document.getElementById('conferenceForm').onsubmit = e => {
+      e.preventDefault(); submitForm('conferenceForm', 'conference');
+    };
+    document.getElementById('journalForm').onsubmit = e => {
+      e.preventDefault(); submitForm('journalForm', 'journal');
+    };
+    document.getElementById('bookForm').onsubmit = e => {
+      e.preventDefault(); submitForm('bookForm', 'book');
+    };
+
+    // On page load
+    window.onload = () => {
+      // Check if user is logged in
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      loadPublications();
+      const faculty = JSON.parse(localStorage.getItem('faculty') || '{}');
+      document.getElementById('facultyName').textContent = faculty.name || 'Faculty';
+    };
+  </script>
+</body>
+</html>
